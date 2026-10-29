@@ -27,10 +27,6 @@
       await userStore.logout()
     }
   }
-
-  const toDocument = () => {
-    window.open('https://docs.element-plus-admin.cn/')
-  }
 </script>
 
 <template>
@@ -48,9 +44,6 @@
     <template #dropdown>
       <ElDropdownMenu>
         <ElDropdownItem>
-          <div @click="toDocument">{{ t('common.document') }}</div>
-        </ElDropdownItem>
-        <ElDropdownItem divided>
           <div @click="loginOut">{{ t('common.loginOut') }}</div>
         </ElDropdownItem>
       </ElDropdownMenu>

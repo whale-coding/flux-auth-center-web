@@ -2,7 +2,6 @@ export default {
   common: {
     required: 'This is required',
     loginOut: 'Log out',
-    document: 'Document',
     reminder: 'Reminder',
     loginOutMessage: 'Exit the system?',
     ok: 'OK',
