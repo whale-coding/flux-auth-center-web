@@ -31,6 +31,9 @@ export const useUserStore = defineStore('user', {
       this.token = accessToken
       this.userInfo = user
     },
+    setUserInfo(userInfo: UserInfo) {
+      this.userInfo = userInfo
+    },
     rememberUsername(username: string, remember: boolean) {
       this.rememberMe = remember
       this.rememberedUsername = remember ? username : ''

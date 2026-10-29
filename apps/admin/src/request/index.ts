@@ -1,12 +1,21 @@
 import { ElMessage } from 'element-plus'
 import { createRequest, isCancel, type AxiosResponse, type RequestConfig } from '@vea/request'
-import { CONTENT_TYPE, REQUEST_TIMEOUT, SUCCESS_CODE } from '@/constants'
+import {
+  API_SUCCESS_CODE,
+  CONTENT_TYPE,
+  REQUEST_TIMEOUT,
+  SUCCESS_CODE,
+  TOKEN_INVALID_CODES
+} from '@/constants'
 import { useUserStoreWithOut } from '@/store/modules/user'
 
 export interface ApiResponse<Data = unknown> {
-  code: number
+  code: number | string
   data: Data
+  /** 前端 mock 的提示字段 */
   message?: string
+  /** 后端 Result 的提示字段 */
+  msg?: string
 }
 
 const normalizeRequestKey = (url = '') => url.replace(/^\/mock(?=\/)/, '')
@@ -33,12 +42,13 @@ const client = createRequest({
     if (response.config.responseType === 'blob') return response
 
     const result = response.data as ApiResponse
-    if (result.code === SUCCESS_CODE) return result
+    if (result.code === SUCCESS_CODE || result.code === API_SUCCESS_CODE) return result
 
-    if (result.code === 401) void useUserStoreWithOut().logout()
-    throw Object.assign(new Error(result.message || `Request failed (${result.code})`), {
-      code: result.code
-    })
+    const message = result.message || result.msg || `Request failed (${result.code})`
+    if (TOKEN_INVALID_CODES.includes(String(result.code))) {
+      void useUserStoreWithOut().logout()
+    }
+    throw Object.assign(new Error(message), { code: result.code })
   },
   onError(error) {
     if (!isCancel(error)) {

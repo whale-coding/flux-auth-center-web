@@ -3,7 +3,7 @@
   import { ElCheckbox, ElForm, ElFormItem, ElInput } from 'element-plus'
   import { useRouter } from 'vue-router'
   import { required, useForm } from '@vea/hooks'
-  import { loginApi } from '@/api/login'
+  import { loginApi, getCurrentUserApi } from '@/api/login'
   import type { LoginParams } from '@/api/login/types'
   import { ElButton } from 'element-plus'
   import { useI18n } from 'vue-i18n'
@@ -16,7 +16,7 @@
   const { t } = useI18n()
 
   const { state, actions } = useForm<LoginParams>({
-    initialValues: { username: userStore.rememberedUsername || 'admin', password: 'admin' },
+    initialValues: { username: userStore.rememberedUsername || 'admin', password: '123456' },
     rules: {
       username: required(() => t('common.required')),
       password: required(() => t('common.required'))
@@ -32,12 +32,14 @@
   })
 
   const login = async (formData: LoginParams) => {
-    const res = await loginApi(formData)
-    if (!res) return
+    const result = await loginApi(formData)
+    if (!result) return
 
     userStore.rememberUsername(formData.username, remember.value)
-    userStore.setSession(res.data)
+    userStore.setSession(result)
     try {
+      const me = await getCurrentUserApi()
+      userStore.setUserInfo(me.data)
       await ensureDynamicRoutes()
       await push(redirect.value || '/')
     } catch (error) {
@@ -46,7 +48,10 @@
     }
   }
 
-  const signIn = () => actions.submit(login)
+  // 校验失败或接口报错都会 reject，请求层已统一弹 ElMessage，这里兜住避免未处理异常
+  const signIn = () => {
+    actions.submit(login).catch(() => {})
+  }
 </script>
 
 <template>
